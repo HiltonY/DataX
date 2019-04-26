@@ -134,6 +134,7 @@ public class Engine {
         String jobIdString = cl.getOptionValue("jobid");
         RUNTIME_MODE = cl.getOptionValue("mode");
 
+        //将迆配置解析为配置对象
         Configuration configuration = ConfigParser.parse(jobPath);
 
         long jobId;

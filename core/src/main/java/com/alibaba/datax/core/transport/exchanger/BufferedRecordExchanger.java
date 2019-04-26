@@ -85,11 +85,17 @@ public class BufferedRecordExchanger implements RecordSender, RecordReceiver {
 
 		Validate.notNull(record, "record不能为空.");
 
+		//单条record的大小限制
+		//如果超过限制，作为脏数据进行记录
 		if (record.getMemorySize() > this.byteCapacity) {
 			this.pluginCollector.collectDirtyRecord(record, new Exception(String.format("单条记录超过大小限制，当前限制为:%s", this.byteCapacity)));
 			return;
 		}
 
+		//批量提交数据，并非每条记录都提交
+		//当触发以下条件中的任意一个时进行数据提交
+		//1.缓存的record数量大于预定的bufferSize
+		//2.或者，当已经缓存的record 容量大于预定的最大容量
 		boolean isFull = (this.bufferIndex >= this.bufferSize || this.memoryBytes.get() + record.getMemorySize() > this.byteCapacity);
 		if (isFull) {
 			flush();
@@ -101,6 +107,7 @@ public class BufferedRecordExchanger implements RecordSender, RecordReceiver {
 	}
 
 	@Override
+	//将缓存的record提交
 	public void flush() {
 		if(shutdown){
 			throw DataXException.asDataXException(CommonErrorCode.SHUT_DOWN_TASK, "");

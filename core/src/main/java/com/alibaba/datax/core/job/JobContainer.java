@@ -309,7 +309,9 @@ public class JobContainer extends AbstractContainer {
         this.prepareJobWriter();
     }
 
+    //执行前置处理
     private void preHandle() {
+        //通过配置文件获取preHandler 配置
         String handlerPluginTypeStr = this.configuration.getString(
                 CoreConstant.DATAX_JOB_PREHANDLER_PLUGINTYPE);
         if(!StringUtils.isNotEmpty(handlerPluginTypeStr)){
@@ -324,9 +326,11 @@ public class JobContainer extends AbstractContainer {
                     String.format("Job preHandler's pluginType(%s) set error, reason(%s)", handlerPluginTypeStr.toUpperCase(), e.getMessage()));
         }
 
+        //获取插件名称
         String handlerPluginName = this.configuration.getString(
                 CoreConstant.DATAX_JOB_PREHANDLER_PLUGINNAME);
 
+        //切换ClassLoader
         classLoaderSwapper.setCurrentThreadClassLoader(LoadUtil.getJarLoader(
                 handlerPluginType, handlerPluginName));
 
@@ -413,12 +417,15 @@ public class JobContainer extends AbstractContainer {
         return contentConfig.size();
     }
 
+    //根据流控配置调整channel数量
     private void adjustChannelNumber() {
         int needChannelNumberByByte = Integer.MAX_VALUE;
         int needChannelNumberByRecord = Integer.MAX_VALUE;
 
         boolean isByteLimit = (this.configuration.getInt(
                 CoreConstant.DATAX_JOB_SETTING_SPEED_BYTE, 0) > 0);
+
+        //有配置byte限流，根据流控设置所需的通道数
         if (isByteLimit) {
             long globalLimitedByteSpeed = this.configuration.getInt(
                     CoreConstant.DATAX_JOB_SETTING_SPEED_BYTE, 10 * 1024 * 1024);
@@ -439,6 +446,7 @@ public class JobContainer extends AbstractContainer {
             LOG.info("Job set Max-Byte-Speed to " + globalLimitedByteSpeed + " bytes.");
         }
 
+        //有记录数限流，根据流控设置计算所需通道数
         boolean isRecordLimit = (this.configuration.getInt(
                 CoreConstant.DATAX_JOB_SETTING_SPEED_RECORD, 0)) > 0;
         if (isRecordLimit) {
@@ -468,6 +476,7 @@ public class JobContainer extends AbstractContainer {
             return;
         }
 
+        //未设置byte或者record流控，则获取channel数量配置
         boolean isChannelLimit = (this.configuration.getInt(
                 CoreConstant.DATAX_JOB_SETTING_SPEED_CHANNEL, 0) > 0);
         if (isChannelLimit) {
@@ -480,6 +489,7 @@ public class JobContainer extends AbstractContainer {
             return;
         }
 
+        //如果未设置任何流控措施，报错
         throw DataXException.asDataXException(
                 FrameworkErrorCode.CONFIG_ERROR,
                 "Job运行速度必须设置");

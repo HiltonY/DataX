@@ -74,12 +74,16 @@ public class MemoryChannel extends Channel {
 			long startTime = System.nanoTime();
 			lock.lockInterruptibly();
 			int bytes = getRecordBytes(rs);
+			//需注意，如果提交的buffer总大小+内存中剩余未写入的部分 > 预先设定的总buffer数量，则需要hold，防止内存溢出，直到writer将数据消费掉之后再写入
 			while (memoryBytes.get() + bytes > this.byteCapacity || rs.size() > this.queue.remainingCapacity()) {
 				notInsufficient.await(200L, TimeUnit.MILLISECONDS);
             }
 			this.queue.addAll(rs);
+			//记录等待写入的时间消耗
 			waitWriterTime += System.nanoTime() - startTime;
+			//维护内存耗用量
 			memoryBytes.addAndGet(bytes);
+			//唤醒等待队列的线程
 			notEmpty.signalAll();
 		} catch (InterruptedException e) {
 			throw DataXException.asDataXException(

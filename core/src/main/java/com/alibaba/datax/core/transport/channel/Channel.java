@@ -132,6 +132,7 @@ public abstract class Channel {
 //                currentCommunication.getLongCounter(CommunicationTool.STAGE) + 1);
     }
 
+    //将所有已缓存的数据提交给writer
     public void pushAll(final Collection<Record> rs) {
         Validate.notNull(rs);
         Validate.noNullElements(rs);

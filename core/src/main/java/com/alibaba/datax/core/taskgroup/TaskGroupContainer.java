@@ -111,9 +111,11 @@ public class TaskGroupContainer extends AbstractContainer {
             int channelNumber = this.configuration.getInt(
                     CoreConstant.DATAX_CORE_CONTAINER_TASKGROUP_CHANNEL);
 
+            //最大重试次数
             int taskMaxRetryTimes = this.configuration.getInt(
                     CoreConstant.DATAX_CORE_CONTAINER_TASK_FAILOVER_MAXRETRYTIMES, 1);
 
+            //重试间隔
             long taskRetryIntervalInMsec = this.configuration.getLong(
                     CoreConstant.DATAX_CORE_CONTAINER_TASK_FAILOVER_RETRYINTERVALINMSEC, 10000);
 
